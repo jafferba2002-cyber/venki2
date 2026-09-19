@@ -7,6 +7,7 @@ const chatInput = document.getElementById('chatInput');
 const contactForm = document.getElementById('contactForm');
 const formStatus = document.getElementById('formStatus');
 const formPlumeEndpoint = 'https://api.formplume.com/f/24cd0eddc80928f00d115f36';
+const mobileNavMenu = document.querySelector('.mobile-nav-menu');
 
 function toggleChat(open) {
   chatPanel.classList.toggle('open', open);
@@ -16,6 +17,12 @@ function toggleChat(open) {
 
 chatLauncher.addEventListener('click', () => toggleChat(true));
 chatClose.addEventListener('click', () => toggleChat(false));
+
+mobileNavMenu?.querySelectorAll('a').forEach((link) => {
+  link.addEventListener('click', () => {
+    mobileNavMenu.removeAttribute('open');
+  });
+});
 
 document.querySelectorAll('.quick-prompts button').forEach((button) => {
   button.addEventListener('click', () => sendChatMessage(button.dataset.question));
