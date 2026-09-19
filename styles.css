@@ -115,6 +115,9 @@ textarea {
 .mobile-nav-menu {
   display: none;
 }
+.mobile-resume-menu {
+  position: relative;
+}
 .main-nav a,
 .header-cta {
   font-size: 13px;
@@ -971,6 +974,33 @@ h2 em {
     font-size: 10px;
   }
   .mobile-nav-options a:hover {
+    background: var(--cream);
+    color: var(--copper);
+  }
+  .mobile-resume-menu summary {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 10px;
+    list-style: none;
+  }
+  .mobile-resume-menu summary::-webkit-details-marker {
+    display: none;
+  }
+  .mobile-resume-menu summary span {
+    color: var(--copper);
+    font-size: 15px;
+  }
+  .mobile-resume-options {
+    padding-left: 8px;
+    border-top: 1px solid var(--line);
+  }
+  .mobile-resume-options a {
+    font-size: 10px;
+  }
+  .mobile-resume-options a:hover {
     background: var(--cream);
     color: var(--copper);
   }
