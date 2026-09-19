@@ -980,6 +980,7 @@ h2 em {
   .mobile-resume-menu summary {
     display: flex;
     justify-content: space-between;
+    width: 100%;
     padding: 10px;
     color: var(--ink);
     cursor: pointer;
@@ -994,10 +995,17 @@ h2 em {
     font-size: 15px;
   }
   .mobile-resume-options {
+    display: none;
     padding-left: 8px;
     border-top: 1px solid var(--line);
   }
+  .mobile-resume-menu[open] .mobile-resume-options {
+    display: flex;
+    flex-direction: column;
+  }
   .mobile-resume-options a {
+    display: flex;
+    justify-content: space-between;
     font-size: 10px;
   }
   .mobile-resume-options a:hover {
