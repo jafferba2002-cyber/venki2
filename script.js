@@ -1,75 +1,132 @@
-const chatLauncher = document.getElementById('chatLauncher');
-const chatPanel = document.getElementById('chatPanel');
-const chatClose = document.getElementById('chatClose');
-const chatMessages = document.getElementById('chatMessages');
-const chatForm = document.getElementById('chatForm');
-const chatInput = document.getElementById('chatInput');
 const contactForm = document.getElementById('contactForm');
 const formStatus = document.getElementById('formStatus');
 const formPlumeEndpoint = 'https://api.formplume.com/f/24cd0eddc80928f00d115f36';
 const mobileNavMenu = document.querySelector('.mobile-nav-menu');
 
-function toggleChat(open) {
-  chatPanel.classList.toggle('open', open);
-  chatPanel.setAttribute('aria-hidden', String(!open));
-  if (open) chatInput.focus();
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const chatLauncher = document.getElementById('chatLauncher');
+  const chatPanel = document.getElementById('chatPanel');
+  const chatClose = document.getElementById('chatClose');
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+  const chatMessages = document.getElementById('chatMessages');
+  const promptButtons = document.querySelectorAll('.prompt-btn');
+  const mobileNavMenu = document.querySelector('.mobile-nav-menu');
+  const apiKey = window.GEMINI_API_KEY;
+  const apiUrl = apiKey
+    ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`
+    : null;
+  const resumeContext = `You are an AI assistant for Venkatesh S. Answer questions strictly based on the following resume. Do not make up information. If a question is outside this scope, politely say you don't have that information.
 
-chatLauncher.addEventListener('click', () => toggleChat(true));
-chatClose.addEventListener('click', () => toggleChat(false));
+Name: Venkatesh S
+Contact: 9865434053, venkisvoct@gmail.com
+Location: Kuniyamuthur PO, Coimbatore, Tamil Nadu.
 
-mobileNavMenu?.querySelectorAll('a').forEach((link) => {
-  link.addEventListener('click', () => {
-    mobileNavMenu.removeAttribute('open');
+Experience:
+- Chief Manager (Operations Manager) at IDFC First Bank Ltd (May 2018 - Present). Manages operations for multiple TN & KL locations, handles loan disbursements, audits, and team monitoring.
+- Manager Asset Operations at RBL Bank Ltd (Apr 2017 - May 2018).
+- Manager Asset Operations at Kotak Mahindra Bank Ltd (Sept 2008 - Apr 2017). Handled branch activities, disbursements, and recovery.
+- Junior Officer Operations at Atlas Pvt Ltd (June 2007 - Sept 2008).
+- CPA Staff-Credit at GKC Management Services (July 2006 - May 2007).
+
+Education:
+- MBA Finance (56%) from Bharathiar University.
+- B.Com Computer Application (58%) from Sri Krishna Arts & Science College.
+
+Skills: VB, C, Java, BASIC, Windows, MSOffice, Tally.
+Awards: Star of the Quarter, Star of the Month, Risk Prevention Award.
+Languages: English, Tamil, Telugu.`;
+
+  const setChatVisibility = (isVisible) => {
+    chatPanel.style.display = isVisible ? 'flex' : 'none';
+    chatPanel.classList.toggle('open', isVisible);
+    chatPanel.setAttribute('aria-hidden', String(!isVisible));
+    if (isVisible) chatInput.focus();
+  };
+
+  chatLauncher.addEventListener('click', () => {
+    setChatVisibility(chatPanel.style.display === 'none');
   });
-});
 
-document.querySelectorAll('.quick-prompts button').forEach((button) => {
-  button.addEventListener('click', () => sendChatMessage(button.dataset.question));
-});
+  chatClose.addEventListener('click', () => setChatVisibility(false));
 
-function addMessage(text, type) {
-  const message = document.createElement('div');
-  message.className = `message ${type}`;
-  message.textContent = text;
-  chatMessages.appendChild(message);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+  mobileNavMenu?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => mobileNavMenu.removeAttribute('open'));
+  });
 
-function answerQuestion(question) {
-  const normalized = question.toLowerCase();
-  if (normalized.includes('current') || normalized.includes('role') || normalized.includes('work')) {
-    return 'Venkatesh is currently a Chief Manager and Area Operations Manager at IDFC FIRST Bank, leading operations across Tamil Nadu and Kerala.';
-  }
-  if (normalized.includes('strength') || normalized.includes('expertise') || normalized.includes('good')) {
-    return 'His strongest areas are regional operations, lending and disbursement, legal documentation, risk controls, audits, and developing high-performing teams.';
-  }
-  if (normalized.includes('contact') || normalized.includes('email') || normalized.includes('reach')) {
-    return 'You can reach him at venkisvoct@gmail.com, or use the contact form on this page to send a message.';
-  }
-  if (normalized.includes('education') || normalized.includes('degree') || normalized.includes('study')) {
-    return 'He holds a B.Com in Computer Application and an MBA in Finance from Bharathiar University.';
-  }
-  if (normalized.includes('experience') || normalized.includes('career') || normalized.includes('years')) {
-    return 'Venkatesh brings 20+ years of banking experience, including leadership roles at IDFC FIRST Bank, RBL Bank, Kotak Mahindra Bank, and HDFC-associated operations.';
-  }
-  if (normalized.includes('award') || normalized.includes('recognition')) {
-    return 'His recognition includes Star of the Quarter, Star of the Month, Certificate of Efficiency, and the Risk Prevention Award at Kotak Mahindra Bank.';
-  }
-  return 'I can help with his current role, experience, expertise, education, awards, or contact details. What would you like to know?';
-}
+  const addMessage = (text, sender) => {
+    const message = document.createElement('div');
+    message.classList.add('message', sender);
+    message.textContent = text;
+    chatMessages.appendChild(message);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return message;
+  };
 
-function sendChatMessage(question) {
-  const trimmed = question.trim();
-  if (!trimmed) return;
-  addMessage(trimmed, 'user');
-  chatInput.value = '';
-  window.setTimeout(() => addMessage(answerQuestion(trimmed), 'assistant'), 350);
-}
+  const getAIResponse = async (userText, typingIndicator) => {
+    if (!apiUrl) {
+      typingIndicator?.remove();
+      addMessage('The chatbot is not configured yet. Please use the contact form instead.', 'assistant');
+      return;
+    }
 
-chatForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  sendChatMessage(chatInput.value);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: resumeContext },
+              { text: `User Question: ${userText}` }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 150
+          }
+        })
+      });
+
+      if (!response.ok) throw new Error(`Gemini request failed: ${response.status}`);
+      const data = await response.json();
+      typingIndicator?.remove();
+      const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      addMessage(aiText || 'Sorry, I encountered an error processing your request.', 'assistant');
+    } catch (error) {
+      typingIndicator?.remove();
+      const errorMessage = error.name === 'AbortError'
+        ? 'The response took too long. Please try again.'
+        : 'Connection error. Please try again later.';
+      addMessage(errorMessage, 'assistant');
+      console.error('API Error:', error);
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
+  chatForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const userText = chatInput.value.trim();
+    if (!userText) return;
+    addMessage(userText, 'user');
+    chatInput.value = '';
+    const typingIndicator = addMessage('Thinking...', 'assistant');
+    await getAIResponse(userText, typingIndicator);
+  });
+
+  promptButtons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      const question = button.dataset.question;
+      addMessage(question, 'user');
+      const typingIndicator = addMessage('Thinking...', 'assistant');
+      await getAIResponse(question, typingIndicator);
+    });
+  });
 });
 
 contactForm.addEventListener('submit', async (event) => {
