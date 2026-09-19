@@ -112,6 +112,9 @@ textarea {
   gap: 39px;
   margin-left: 11vw;
 }
+.mobile-nav-menu {
+  display: none;
+}
 .main-nav a,
 .header-cta {
   font-size: 13px;
@@ -920,14 +923,48 @@ h2 em {
 }
 @media (max-width: 600px) {
   .main-nav {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
+    display: none;
   }
-  .main-nav a,
-  .resume-menu summary {
+  .mobile-nav-menu {
+    display: block;
+    margin-left: auto;
+    position: relative;
+  }
+  .mobile-nav-menu summary {
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    list-style: none;
+  }
+  .mobile-nav-menu summary::-webkit-details-marker {
+    display: none;
+  }
+  .mobile-nav-menu summary span {
+    color: var(--copper);
+    font-size: 15px;
+    margin-left: 3px;
+  }
+  .mobile-nav-options {
+    position: absolute;
+    top: 28px;
+    right: 0;
+    z-index: 7;
+    width: 150px;
+    padding: 7px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 30px rgba(14, 27, 46, 0.14);
+  }
+  .mobile-nav-options a {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
     font-size: 10px;
+  }
+  .mobile-nav-options a:hover {
+    background: var(--cream);
+    color: var(--copper);
   }
   .site-header {
     height: 70px;
