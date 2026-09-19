@@ -12,10 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatMessages = document.getElementById('chatMessages');
   const promptButtons = document.querySelectorAll('.prompt-btn');
   const mobileNavMenu = document.querySelector('.mobile-nav-menu');
-  const apiKey = window.GEMINI_API_KEY;
+  const apiKey = window.OPENROUTER_API_KEY;
   const apiUrl = apiKey
-    ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`
+    ? 'https://openrouter.ai/api/v1/chat/completions'
     : null;
+  const model = 'openai/gpt-4o-mini';
   const resumeContext = `You are an AI assistant for Venkatesh S. Answer questions strictly based on the following resume. Do not make up information. If a question is outside this scope, politely say you don't have that information.
 
 Name: Venkatesh S
@@ -76,26 +77,28 @@ Languages: English, Tamil, Telugu.`;
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+          'HTTP-Referer': window.location.href,
+          'X-Title': 'Venkatesh S Portfolio'
+        },
         signal: controller.signal,
         body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: resumeContext },
-              { text: `User Question: ${userText}` }
-            ]
-          }],
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 150
-          }
+          model,
+          messages: [
+            { role: 'system', content: resumeContext },
+            { role: 'user', content: userText }
+          ],
+          temperature: 0.2,
+          max_tokens: 150
         })
       });
 
-      if (!response.ok) throw new Error(`Gemini request failed: ${response.status}`);
+      if (!response.ok) throw new Error(`OpenRouter request failed: ${response.status}`);
       const data = await response.json();
       typingIndicator?.remove();
-      const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      const aiText = data.choices?.[0]?.message?.content;
       addMessage(aiText || 'Sorry, I encountered an error processing your request.', 'assistant');
     } catch (error) {
       typingIndicator?.remove();
