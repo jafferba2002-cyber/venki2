@@ -920,10 +920,18 @@ h2 em {
 }
 @media (max-width: 600px) {
   .main-nav {
-    display: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+  .main-nav a,
+  .resume-menu summary {
+    font-size: 10px;
   }
   .site-header {
     height: 70px;
+    padding: 0 4vw;
   }
   .hero {
     padding-top: 62px;
