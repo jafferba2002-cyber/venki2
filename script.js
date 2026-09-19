@@ -6,6 +6,7 @@ const chatForm = document.getElementById('chatForm');
 const chatInput = document.getElementById('chatInput');
 const contactForm = document.getElementById('contactForm');
 const formStatus = document.getElementById('formStatus');
+const formPlumeEndpoint = 'https://api.formplume.com/f/24cd0eddc80928f00d115f36';
 
 function toggleChat(open) {
   chatPanel.classList.toggle('open', open);
@@ -64,15 +65,33 @@ chatForm.addEventListener('submit', (event) => {
   sendChatMessage(chatInput.value);
 });
 
-contactForm.addEventListener('submit', (event) => {
+contactForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const submitButton = contactForm.querySelector('button');
+  const originalButtonLabel = submitButton.innerHTML;
   submitButton.disabled = true;
-  submitButton.innerHTML = 'Message noted <span aria-hidden="true">✓</span>';
-  formStatus.textContent = 'Thank you. Your message is ready to be followed up.';
-  contactForm.reset();
-  window.setTimeout(() => {
+  submitButton.innerHTML = 'Sending <span aria-hidden="true">…</span>';
+  formStatus.textContent = 'Sending your message…';
+
+  try {
+    const response = await fetch(formPlumeEndpoint, {
+      method: 'POST',
+      body: new FormData(contactForm),
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error(`Form submission failed: ${response.status}`);
+
+    formStatus.textContent = 'Thank you. Your message has been sent.';
+    contactForm.reset();
+    submitButton.innerHTML = 'Message sent <span aria-hidden="true">✓</span>';
+  } catch (error) {
+    console.error(error);
+    formStatus.textContent = 'Something went wrong. Please try again or use the email link.';
+    submitButton.innerHTML = originalButtonLabel;
+  } finally {
     submitButton.disabled = false;
-    submitButton.innerHTML = 'Send message <span aria-hidden="true">↗</span>';
-  }, 3500);
+  }
 });

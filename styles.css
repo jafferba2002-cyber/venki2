@@ -709,6 +709,22 @@ h2 em {
   color: var(--white);
   font-size: 19px;
 }
+.designer-credit {
+  white-space: nowrap;
+}
+.designer-credit a {
+  transition: color 0.2s;
+}
+.designer-credit a:hover {
+  color: var(--copper-light);
+}
+.designer-credit span {
+  color: var(--copper-light);
+  margin-right: 5px;
+}
+.designer-credit a {
+  color: var(--copper);
+}
 .site-footer a:last-child {
   color: var(--copper-light);
 }
