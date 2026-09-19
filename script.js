@@ -12,31 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatMessages = document.getElementById('chatMessages');
   const promptButtons = document.querySelectorAll('.prompt-btn');
   const mobileNavMenu = document.querySelector('.mobile-nav-menu');
-  const apiKey = window.OPENROUTER_API_KEY;
-  const apiUrl = apiKey
-    ? 'https://openrouter.ai/api/v1/chat/completions'
-    : null;
-  const model = 'openai/gpt-4o-mini';
-  const resumeContext = `You are an AI assistant for Venkatesh S. Answer questions strictly based on the following resume. Do not make up information. If a question is outside this scope, politely say you don't have that information.
-
-Name: Venkatesh S
-Contact: 9865434053, venkisvoct@gmail.com
-Location: Kuniyamuthur PO, Coimbatore, Tamil Nadu.
-
-Experience:
-- Chief Manager (Operations Manager) at IDFC First Bank Ltd (May 2018 - Present). Manages operations for multiple TN & KL locations, handles loan disbursements, audits, and team monitoring.
-- Manager Asset Operations at RBL Bank Ltd (Apr 2017 - May 2018).
-- Manager Asset Operations at Kotak Mahindra Bank Ltd (Sept 2008 - Apr 2017). Handled branch activities, disbursements, and recovery.
-- Junior Officer Operations at Atlas Pvt Ltd (June 2007 - Sept 2008).
-- CPA Staff-Credit at GKC Management Services (July 2006 - May 2007).
-
-Education:
-- MBA Finance (56%) from Bharathiar University.
-- B.Com Computer Application (58%) from Sri Krishna Arts & Science College.
-
-Skills: VB, C, Java, BASIC, Windows, MSOffice, Tally.
-Awards: Star of the Quarter, Star of the Month, Risk Prevention Award.
-Languages: English, Tamil, Telugu.`;
+  const apiUrl = '/.netlify/functions/chat';
 
   const setChatVisibility = (isVisible) => {
     chatPanel.style.display = isVisible ? 'flex' : 'none';
@@ -65,40 +41,21 @@ Languages: English, Tamil, Telugu.`;
   };
 
   const getAIResponse = async (userText, typingIndicator) => {
-    if (!apiUrl) {
-      typingIndicator?.remove();
-      addMessage('The chatbot is not configured yet. Please use the contact form instead.', 'assistant');
-      return;
-    }
-
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-          'HTTP-Referer': window.location.href,
-          'X-Title': 'Venkatesh S Portfolio'
-        },
+        headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: resumeContext },
-            { role: 'user', content: userText }
-          ],
-          temperature: 0.2,
-          max_tokens: 150
-        })
+        body: JSON.stringify({ question: userText })
       });
 
-      if (!response.ok) throw new Error(`OpenRouter request failed: ${response.status}`);
+      if (!response.ok) throw new Error(`Chat function request failed: ${response.status}`);
       const data = await response.json();
       typingIndicator?.remove();
-      const aiText = data.choices?.[0]?.message?.content;
+      const aiText = data.answer;
       addMessage(aiText || 'Sorry, I encountered an error processing your request.', 'assistant');
     } catch (error) {
       typingIndicator?.remove();
